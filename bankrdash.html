@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BANKR DASH</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Exo+2:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(135deg, #ffe6b4 0%, #fff9e0 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+        }
+        
+        * {
+            box-sizing: border-box;
+        }
+        
+        /* Main title styling */
+        .game-title {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 28px;
+            color: rgb(255, 145, 0);
+            text-shadow: 0 0 10px rgba(255, 145, 0, 0.7), 0 0 20px rgba(255, 145, 0, 0.7);
+            text-align: center;
+            letter-spacing: 2px;
+            position: absolute;
+            top: 20px;
+            transform: translateX(-50%);
+            left: 50%;
+            z-index: 100;
+        }
+        
+        #main-container {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        #game-container {
+            position: relative;
+            width: 400px;
+            height: 600px;
+            overflow: hidden;
+            background: linear-gradient(to bottom, #fff0e0 0%, #fff8e0 100%);
+            border: 4px solid rgb(255, 145, 0);
+            border-radius: 0;
+            box-shadow: 0 10px 30px rgba(221, 102, 16, 0.2), 8px 8px 0 #a05000;
+            margin-top: 10px;
+        }
+        
+        #game-character {
+            position: absolute;
+            width: 45px;
+            height: 45px;
+            background-image: url("https://i.ibb.co/0jLCFf50/bkr.png");
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            left: 100px;
+            filter: drop-shadow(0 5px 5px rgba(0,0,0,0.3));
+            transition: transform 0.1s;
+            z-index: 5;
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-5px) rotate(5deg); }
+            100% { transform: translateY(0) rotate(0deg); }
+        }
+        
+        .pipe {
+            position: absolute;
+            width: 65px;
+            background-color: #ff6600;
+            border: none;
+            background-image: 
+                linear-gradient(90deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0) 10%, rgba(0,0,0,0.1) 20%, rgba(0,0,0,0) 30%, rgba(0,0,0,0.1) 40%, rgba(0,0,0,0) 50%, rgba(0,0,0,0.1) 60%, rgba(0,0,0,0) 70%, rgba(0,0,0,0.1) 80%, rgba(0,0,0,0) 90%, rgba(0,0,0,0.1) 100%),
+                linear-gradient(0deg, #dd5500 0%, #dd5500 11%, #ff6600 11%, #ff6600 89%, #cc4400 89%, #cc4400 100%);
+            background-size: 65px 25px;
+            background-repeat: repeat;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5), 5px 0 10px -5px rgba(0, 0, 0, 0.3);
+        }
+        
+        .pipe-top {
+            border-radius: 8px 8px 0 0;
+        }
+        
+        .pipe-bottom {
+            border-radius: 0 0 8px 8px;
+        }
+        
+        .pipe::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 15px;
+            background: linear-gradient(to bottom, #cc4400, #dd5500);
+            border-radius: 4px;
+        }
+        
+        .pipe-top::after {
+            bottom: 0;
+        }
+        
+        .pipe-bottom::after {
+            top: 0;
+        }
+        
+        #score-display {
+            position: absolute;
+            font-family: 'Press Start 2P', cursive;
+            top: 20px;
+            right: 20px;
+            font-size: 40px;
+            font-weight: bold;
+            color: rgb(255, 145, 0);
+            text-shadow: 
+                2px 2px 0 #000,
+                -2px -2px 0 #000,
+                2px -2px 0 #000,
+                -2px 2px 0 #000,
+                0 2px 0 #000,
+                2px 0 0 #000,
+                0 -2px 0 #000,
+                -2px 0 0 #000;
+            z-index: 10;
+            font-family: 'Courier New', monospace;
+        }
+        
+        #start-screen, #game-over {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: rgba(20, 0, 0, 0.85);
+            backdrop-filter: blur(3px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 20;
+            border-radius: 0;
+            border: 4px solid rgb(255, 145, 0);
+            box-sizing: border-box;
+        }
+        
+        #game-over {
+            display: none;
+        }
+        
+        button {
+            padding: 12px 20px;
+            font-size: 14px;
+            background: linear-gradient(to bottom, #ff6600, #dd5500);
+            color: white;
+            border: 4px solid #aa4400;
+            border-radius: 0;
+            cursor: pointer;
+            margin-top: 20px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            box-shadow: 0 5px 0 #aa4400;
+            transition: all 0.1s ease;
+            text-transform: uppercase;
+            font-family: 'Courier New', monospace;
+            min-width: 160px;
+            text-align: center;
+        }
+        
+        button:hover {
+            background: linear-gradient(to bottom, #ff7722, #ee6611);
+            transform: translateY(-2px);
+            box-shadow: 0 7px 0 #aa4400;
+        }
+        
+        button:active {
+            transform: translateY(3px);
+            box-shadow: 0 2px 0 #aa4400;
+        }
+        
+        h1 {
+            color: #ff6600;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 50px;
+            font-family: 'Press Start 2P', 'Courier New', monospace;
+            text-shadow: 3px 3px 0 #000;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+        
+        .game-text {
+            color: white;
+            font-size: 24px;
+            margin-bottom: 15px;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
+            text-align: center;
+            max-width: 80%;
+            font-family: 'Courier New', monospace;
+        }
+        
+        /* Adding clouds to background */
+        .cloud {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            opacity: 0.8;
+            filter: blur(5px);
+        }
+        
+        .cloud-1 {
+            width: 120px;
+            height: 60px;
+            top: 50px;
+            left: 50px;
+        }
+        
+        .cloud-2 {
+            width: 100px;
+            height: 50px;
+            top: 150px;
+            right: 70px;
+        }
+        
+        .cloud-3 {
+            width: 80px;
+            height: 40px;
+            bottom: 100px;
+            left: 100px;
+        }
+        
+        /* Footer styling */
+        #footer {
+            position: absolute;
+            bottom: 10px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: black;
+            font-weight: bold;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 14px;
+        }
+        
+        #social-links {
+            display: flex;
+            gap: 20px;
+            margin: 10px 0;
+        }
+        
+        .social-icon {
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            fill: black;
+        }
+        
+        .social-icon:hover {
+            transform: scale(1.2);
+        }
+        
+        /* Screenshot and sharing styles */
+        #share-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            justify-content: center;
+        }
+        
+        #share-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            background: linear-gradient(to bottom, #ff6600, #dd5500);
+            color: white;
+            border: 4px solid #aa4400;
+            border-radius: 0;
+            padding: 12px 20px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            box-shadow: 0 5px 0 #aa4400;
+            transition: all 0.1s ease;
+            text-transform: uppercase;
+            font-family: 'Courier New', monospace;
+            width: 160px;
+        }
+        
+        #share-button:hover {
+            background: linear-gradient(to bottom, #ff7722, #ee6611);
+            transform: translateY(-2px);
+            box-shadow: 0 7px 0 #aa4400;
+        }
+        
+        #share-button:active {
+            transform: translateY(3px);
+            box-shadow: 0 2px 0 #aa4400;
+        }
+        
+        #screenshot-btn {
+            background: linear-gradient(to bottom, #ff6600, #dd5500);
+            color: white;
+            border: 4px solid #aa4400;
+            border-radius: 0;
+            padding: 12px 20px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            box-shadow: 0 5px 0 #aa4400;
+            transition: all 0.1s ease;
+            text-transform: uppercase;
+            font-family: 'Courier New', monospace;
+            width: 160px;
+        }
+        
+        #screenshot-btn:hover {
+            background: linear-gradient(to bottom, #ff7722, #ee6611);
+            transform: translateY(-2px);
+            box-shadow: 0 7px 0 #aa4400;
+        }
+        
+        #screenshot-btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 2px 0 #aa4400;
+        }
+        
+        #screenshot-container {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        
+        #screenshot-image {
+            max-width: 80%;
+            max-height: 80%;
+            border: 5px solid white;
+            margin-bottom: 20px;
+        }
+        
+        #screenshot-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: white;
+            font-size: 30px;
+            cursor: pointer;
+        }
+        
+        #game-code {
+            margin-top: 5px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-title">BANKR DASH</div>
+    
+    <div id="main-container">
+        <div id="game-container">
+            <div class="cloud cloud-1"></div>
+            <div class="cloud cloud-2"></div>
+            <div class="cloud cloud-3"></div>
+            
+            <div id="score-display">0</div>
+            <div id="game-character"></div>
+            
+            <div id="start-screen">
+                <h1>BANKR DASH</h1>
+                <button id="start-button">START</button>
+            </div>
+            
+            <div id="game-over">
+                <h1>GAME OVER</h1>
+                <p class="game-text" >Score: <span id="final-score">0</span></p>
+                <p class="game-text" >Try again?</p>
+                
+                <div id="share-buttons">
+                    <button id="screenshot-btn">SCREENSHOT</button>
+                    <button id="share-button">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="white">
+                            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                        </svg>
+                        SHARE
+                    </button>
+                </div>
+                
+                <button id="restart-button">RETRY</button>
+            </div>
+        </div>
+    </div>
+    <div id="footer">
+        <div id="social-links">
+            <a href="https://x.com/Clanker_lab" target="_blank">
+                <svg class="social-icon" viewBox="0 0 24 24" fill="white">
+                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                </svg>
+            </a>
+            <a href="https://dexscreener.com" class="social-link">
+                <img src="https://dexscreener.com/favicon.ico" alt="Dexscreener" style="width: 24px; height: 24px;">
+            </a>
+        </div>
+    </div>    
+    <!-- Screenshot container -->
+    <div id="screenshot-container">
+        <span id="screenshot-close">&times;</span>
+        <img id="screenshot-image" alt="Game Screenshot">
+        <div id="share-buttons">
+            <button id="share-button-modal">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="white">
+                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                </svg>
+                SHARE
+            </button>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script>
+        // Game variables
+        let gameStarted = false;
+        let gameOver = false;
+        let score = 0;
+        let gravity = 0.22;
+        let characterPosition = 300;
+        let velocity = 0;
+        let jumpStrength = -6;
+        let pipes = [];
+        let pipeInterval = 1000;
+        let lastPipeTime = 0;
+        let pipeSpeed = 3;
+        let pipeGap = 260;
+        let animationFrame;
+        let gameScreenshot = null;
+        
+        // DOM elements
+        const gameContainer = document.getElementById('game-container');
+        const character = document.getElementById('game-character');
+        const scoreDisplay = document.getElementById('score-display');
+        const startScreen = document.getElementById('start-screen');
+        const gameOverScreen = document.getElementById('game-over');
+        const finalScoreDisplay = document.getElementById('final-score');
+        const startButton = document.getElementById('start-button');
+        const restartButton = document.getElementById('restart-button');
+        const screenshotBtn = document.getElementById('screenshot-btn');
+        const shareButton = document.getElementById('share-button');
+        const shareButtonModal = document.getElementById('share-button-modal');
+        const screenshotContainer = document.getElementById('screenshot-container');
+        const screenshotImage = document.getElementById('screenshot-image');
+        const screenshotClose = document.getElementById('screenshot-close');
+        
+        // Set initial character position
+        character.style.top = characterPosition + 'px';
+        
+        // Event listeners
+        startButton.addEventListener('click', startGame);
+        restartButton.addEventListener('click', restartGame);
+        document.addEventListener('keydown', function(event) {
+            if ((event.code === 'Space' || event.key === ' ') && !gameOver) {
+                if (!gameStarted) {
+                    startGame();
+                } else {
+                    jump();
+                }
+            }
+        });
+        gameContainer.addEventListener('click', function() {
+            if (!gameOver) {
+                if (!gameStarted) {
+                    startGame();
+                } else {
+                    jump();
+                }
+            }
+        });
+        
+        // Screenshot and sharing functionality
+        screenshotBtn.addEventListener('click', takeScreenshot);
+        screenshotClose.addEventListener('click', () => {
+            screenshotContainer.style.display = 'none';
+        });
+        shareButton.addEventListener('click', shareScore);
+        shareButtonModal.addEventListener('click', shareScore);
+        
+        async function takeScreenshot() { 
+            // Use html2canvas to capture the game container
+            html2canvas(gameContainer).then(canvas => {
+                // Convert canvas to data URL
+                gameScreenshot = canvas.toDataURL('image/png');
+                
+                // Display screenshot in modal
+                screenshotImage.src = gameScreenshot;
+                screenshotContainer.style.display = 'flex';
+            });
+        }
+        
+        function shareScore() {
+            // Take screenshot if not already taken
+            if (!gameScreenshot) {
+                html2canvas(gameContainer).then(canvas => {
+                    gameScreenshot = canvas.toDataURL('image/png');
+                    proceedWithSharing();
+                });
+            } else {
+                proceedWithSharing();
+            }
+        }
+        
+        function proceedWithSharing() {
+            // Create text to share
+            const shareText = encodeURIComponent(`@Clanker_lab @bankrbot I scored ${score} points in Bankr Dash! Can you beat me? #Bankrdash #Bankr #Clanker #Base $Bankrd`);
+            
+            // Open share window
+            window.open(`https://twitter.com/intent/tweet?text=${shareText}`, '_blank', 'width=550,height=420');
+        }
+        
+        // Game functions
+        function startGame() {
+            gameStarted = true;
+            gameOver = false;
+            score = 0;
+            characterPosition = 300;
+            velocity = 0;
+            pipes = [];
+            lastPipeTime = 0;
+            
+            startScreen.style.display = 'none';
+            gameOverScreen.style.display = 'none';
+            scoreDisplay.textContent = '0';
+            
+            // Start the game loop
+            gameLoop();
+        }
+        
+        function restartGame() {
+            gameOverScreen.style.display = 'none';
+            
+            // Remove all existing pipes
+            const pipeElements = document.querySelectorAll('.pipe');
+            pipeElements.forEach(pipe => pipe.remove());
+            
+            startGame();
+        }
+        
+        function jump() {
+            velocity = jumpStrength;
+        }
+        
+        function createPipe() {
+            const pipeHeight = Math.floor(Math.random() * 180) + 100;
+            
+            // Create top pipe
+            const topPipe = document.createElement('div');
+            topPipe.className = 'pipe pipe-top';
+            topPipe.style.height = pipeHeight + 'px';
+            topPipe.style.left = '400px';
+            topPipe.style.top = '0';
+            gameContainer.appendChild(topPipe);
+            
+            // Create bottom pipe
+            const bottomPipe = document.createElement('div');
+            bottomPipe.className = 'pipe pipe-bottom';
+            bottomPipe.style.height = (600 - pipeHeight - pipeGap) + 'px';
+            bottomPipe.style.left = '400px';
+            bottomPipe.style.bottom = '0';
+            gameContainer.appendChild(bottomPipe);
+            
+            // Add to pipes array
+            pipes.push({
+                x: 400,
+                topPipe: topPipe,
+                bottomPipe: bottomPipe,
+                passed: false
+            });
+        }
+        
+        function updatePipes() {
+            const currentTime = Date.now();
+            
+            if (currentTime - lastPipeTime > pipeInterval) {
+                createPipe();
+                lastPipeTime = currentTime;
+            }
+            
+            pipes.forEach((pipe, index) => {
+                pipe.x -= pipeSpeed;
+                pipe.topPipe.style.left = pipe.x + 'px';
+                pipe.bottomPipe.style.left = pipe.x + 'px';
+                
+                // Check if pipe is passed
+                if (!pipe.passed && pipe.x < 75) {
+                    pipe.passed = true;
+                    score++;
+                    scoreDisplay.textContent = score;
+                }
+                
+                // Remove pipes that are off-screen
+                if (pipe.x < -70) {
+                    pipe.topPipe.remove();
+                    pipe.bottomPipe.remove();
+                    pipes.splice(index, 1);
+                }
+            });
+        }
+        
+        function checkCollision() {
+            const characterRect = {
+                x: 100,
+                y: characterPosition,
+                width: 45,
+                height: 45
+            };
+            
+            // Check for collision with pipes
+            for (let pipe of pipes) {
+                const topPipeRect = pipe.topPipe.getBoundingClientRect();
+                const bottomPipeRect = pipe.bottomPipe.getBoundingClientRect();
+                const gameContainerRect = gameContainer.getBoundingClientRect();
+                
+                const topPipeGameRect = {
+                    x: pipe.x,
+                    y: 0,
+                    width: 64,
+                    height: parseInt(pipe.topPipe.style.height)
+                };
+                
+                const bottomPipeGameRect = {
+                    x: pipe.x,
+                    y: 600 - parseInt(pipe.bottomPipe.style.height),
+                    width: 64,
+                    height: parseInt(pipe.bottomPipe.style.height)
+                };
+                
+                if (
+                    characterRect.x + characterRect.width > topPipeGameRect.x &&
+                    characterRect.x < topPipeGameRect.x + topPipeGameRect.width &&
+                    characterRect.y < topPipeGameRect.y + topPipeGameRect.height
+                ) {
+                    return true;
+                }
+                
+                if (
+                    characterRect.x + characterRect.width > bottomPipeGameRect.x &&
+                    characterRect.x < bottomPipeGameRect.x + bottomPipeGameRect.width &&
+                    characterRect.y + characterRect.height > bottomPipeGameRect.y
+                ) {
+                    return true;
+                }
+            }
+            
+            // Check for collision with top and bottom of game container
+            if (characterPosition <= 0 || characterPosition + 50 >= 600) {
+                return true;
+            }
+            
+            return false;
+        }
+        
+        function gameLoop() {
+            // Apply gravity
+            velocity += gravity;
+            characterPosition += velocity;
+            character.style.top = characterPosition + 'px';
+            
+            // Rotate character based on velocity
+            if (velocity < 0) {
+                character.style.transform = 'rotate(-20deg)';
+            } else {
+                character.style.transform = 'rotate(20deg)';
+            }
+            
+            // Update pipes
+            updatePipes();
+            
+            // Check for collisions
+            if (checkCollision()) {
+                endGame();
+                return;
+            }
+            
+            // Continue the game loop
+            animationFrame = requestAnimationFrame(gameLoop);
+        }
+        
+        function endGame() {
+            gameOver = true;
+            gameStarted = false;
+            cancelAnimationFrame(animationFrame);
+            
+            finalScoreDisplay.textContent = score;
+            gameOverScreen.style.display = 'flex';
+            
+            // Reset screenshot
+            gameScreenshot = null;
+        }
+    </script>
+</body>
+</html>
